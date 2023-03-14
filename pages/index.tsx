@@ -1,4 +1,6 @@
 import Head from "next/head";
+import Input from "../components/Input";
+import Display from "../components/Display";
 
 export default function Home() {
   return (
@@ -6,7 +8,11 @@ export default function Home() {
       <Head>
         <title>rebuild jotai with nextjs and tests</title>
       </Head>
-      <h1>hello world</h1>
+      <h1>rebuild jotai with nextjs and tests</h1>
+      <div>
+        <Input />
+        <Display />
+      </div>
     </>
   );
 }
