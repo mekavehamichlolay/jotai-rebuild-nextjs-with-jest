@@ -2,13 +2,13 @@ import { useAtomValue } from "../jotai";
 import {
   salary as salaryAtom,
   bonus as bonusAtom,
-  fullSaalary,
+  fullSalary,
 } from "../store/global";
 
 function Display() {
   const salary = useAtomValue(salaryAtom);
   const bonus = useAtomValue(bonusAtom);
-  const total = useAtomValue(fullSaalary);
+  const total = useAtomValue(fullSalary);
   return (
     <div>
       <div>base salary: {salary}</div>

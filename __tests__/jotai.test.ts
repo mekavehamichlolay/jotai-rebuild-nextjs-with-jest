@@ -1,12 +1,12 @@
-import { salary, fullSaalary, bonus } from "../store/global";
+import { salary, fullSalary, bonus } from "../store/global";
 import { atom } from "../jotai";
 describe("chect the custom jotai", () => {
   it("should work properly", () => {
     expect(salary.get()).toBe(100_000);
-    expect(fullSaalary.get()).toBe(salary.get() + bonus.get());
+    expect(fullSalary.get()).toBe(salary.get() + bonus.get());
     salary.set(1_000_000);
     expect(salary.get()).toBe(1_000_000);
-    expect(fullSaalary.get()).toBe(1_000_000 + bonus.get());
+    expect(fullSalary.get()).toBe(1_000_000 + bonus.get());
   });
   it("should update subscribers only if the value is changed", () => {
     const sub = jest.fn();
@@ -31,7 +31,7 @@ describe("chect the custom jotai", () => {
   });
   it("the subscribed function should run only one time per update in computed value", () => {
     const sub = jest.fn();
-    fullSaalary.subscribe(sub);
+    fullSalary.subscribe(sub);
     expect(sub).toBeCalledTimes(0);
     salary.set(salary.get());
     expect(sub).toBeCalledTimes(0);
