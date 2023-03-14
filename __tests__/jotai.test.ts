@@ -1,6 +1,6 @@
 import { salary, fullSalary, bonus } from "../store/global";
 import { atom } from "../jotai";
-describe("chect the custom jotai", () => {
+describe("check the custom jotai", () => {
   it("should work properly", () => {
     expect(salary.get()).toBe(100_000);
     expect(fullSalary.get()).toBe(salary.get() + bonus.get());
@@ -45,6 +45,8 @@ describe("chect the custom jotai", () => {
     expect(sub).toBeCalledTimes(2);
     bonus.set(bonus.get() + 1);
     expect(sub).toBeCalledTimes(3);
+    bonus.set((i) => i + 1);
+    expect(sub).toBeCalledTimes(4);
   });
   it("should work for promises", async () => {
     const promise = atom(() => Promise.resolve("hello"));
@@ -55,7 +57,19 @@ describe("chect the custom jotai", () => {
     promise.subscribe(sub1);
     await promise.get();
     expect(promise.get()).toBe("hello");
-    expect(sub).toBeCalledTimes(1)
+    expect(sub).toBeCalledTimes(1);
     expect(value).toBe("hello");
+  });
+  it("should be read only, when the initial value is computed", () => {
+    try {
+      expect(fullSalary.set(1)).toThrow(
+        "this atom is subscribed to another atom, you cant set its value directly"
+      );
+    } catch (err) {
+      expect((err as ReturnType<typeof Error>).message).toBe(
+        "this atom is subscribed to another atom, you cant set its value directly"
+      );
+    }
+    expect(fullSalary.get()).toBe(salary.get() + bonus.get());
   });
 });
