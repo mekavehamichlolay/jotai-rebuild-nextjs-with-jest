@@ -67,9 +67,9 @@ export function atom<AtomType>(
 export function useAtom<AtomType>(
   atom: Atom<AtomType>
 ): [AtomType, (newValue: AtomType) => void] {
-  return [useSyncExternalStore(atom.subscribe, atom.get), atom.set];
+  return [useSyncExternalStore(atom.subscribe, atom.get,atom.get), atom.set];
 }
 
 export function useAtomValue<AtomType>(atom: Atom<AtomType>) {
-  return useSyncExternalStore(atom.subscribe, atom.get);
+  return useSyncExternalStore(atom.subscribe, atom.get,atom.get);
 }
