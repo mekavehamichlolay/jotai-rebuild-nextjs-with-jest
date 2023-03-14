@@ -17,33 +17,37 @@ export function atom<AtomType>(
     typeof initialValue === "function" ? (null as AtomType) : initialValue;
 
   const subcribers = new Set<(newValue: AtomType) => void>();
+  const unsubcribers = new Set<() => void>();
 
   function get<Target>(atom: Atom<Target>) {
     let currentValue = atom.get();
-    atom.subscribe((newValue) => {
+    const unsubscribe = atom.subscribe((newValue) => {
       if (currentValue === newValue) return;
-
       currentValue = newValue;
       computeValue();
-      subcribers.forEach((callback) => callback(value));
     });
+    unsubcribers.add(unsubscribe);
     return currentValue;
   }
 
   function computeValue() {
+    unsubcribers.forEach((unsubscribe) => {
+      unsubscribe();
+      unsubcribers.delete(unsubscribe);
+    });
     const newValue =
       typeof initialValue === "function"
         ? (initialValue as AtomGetter<AtomType>)(get)
         : value;
-
+    if (value === newValue) return;
     if (newValue && typeof (newValue as any).then === "function") {
-      value = null as AtomType;
       (newValue as any as Promise<AtomType>).then((resolvedValue) => {
         value = resolvedValue;
         subcribers.forEach((callback) => callback(value));
       });
     } else {
       value = newValue;
+      subcribers.forEach((callback) => callback(value));
     }
   }
   computeValue();
@@ -51,6 +55,7 @@ export function atom<AtomType>(
   return {
     get: () => value,
     set: (newValue) => {
+      if (value == newValue) return;
       value = newValue;
       subcribers.forEach((callback) => callback(value));
     },
@@ -67,9 +72,9 @@ export function atom<AtomType>(
 export function useAtom<AtomType>(
   atom: Atom<AtomType>
 ): [AtomType, (newValue: AtomType) => void] {
-  return [useSyncExternalStore(atom.subscribe, atom.get,atom.get), atom.set];
+  return [useSyncExternalStore(atom.subscribe, atom.get, atom.get), atom.set];
 }
 
 export function useAtomValue<AtomType>(atom: Atom<AtomType>) {
-  return useSyncExternalStore(atom.subscribe, atom.get,atom.get);
+  return useSyncExternalStore(atom.subscribe, atom.get, atom.get);
 }
