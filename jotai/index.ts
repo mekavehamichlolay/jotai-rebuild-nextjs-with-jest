@@ -2,7 +2,7 @@ import { useSyncExternalStore } from "react";
 
 interface Atom<AtomType> {
   get: () => AtomType;
-  set: (newValue: AtomType) => void;
+  set: (newValue: AtomType | ((prevValue: AtomType) => AtomType)) => void;
   subscribe: (callback: (newValue: AtomType) => void) => () => void;
 }
 
@@ -30,7 +30,7 @@ export function atom<AtomType>(
     return currentValue;
   }
 
-  function computeValue() {
+  async function computeValue() {
     unsubcribers.forEach((unsubscribe) => {
       unsubscribe();
       unsubcribers.delete(unsubscribe);
@@ -40,23 +40,25 @@ export function atom<AtomType>(
         ? (initialValue as AtomGetter<AtomType>)(get)
         : value;
     if (value === newValue) return;
-    if (newValue && typeof (newValue as any).then === "function") {
-      (newValue as any as Promise<AtomType>).then((resolvedValue) => {
-        value = resolvedValue;
-        subcribers.forEach((callback) => callback(value));
-      });
-    } else {
-      value = newValue;
-      subcribers.forEach((callback) => callback(value));
-    }
+    value = null as AtomType;
+    value = (newValue as Promise<AtomType>).then ? await newValue : newValue;
+    subcribers.forEach((callback) => callback(value));
   }
   computeValue();
 
   return {
     get: () => value,
     set: (newValue) => {
+      if (typeof initialValue === "function") {
+        throw new Error(
+          "this atom is subscribed to another atom, you cant set its value directly"
+        );
+      }
       if (value == newValue) return;
-      value = newValue;
+      value =
+        typeof newValue === "function"
+          ? (newValue as (prevValue: AtomType) => AtomType)(value)
+          : newValue;
       subcribers.forEach((callback) => callback(value));
     },
     subscribe: (callback) => {
